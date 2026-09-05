@@ -1,0 +1,54 @@
+{
+    "name": "Timerra - Countdown Timer",
+    "short_name": "Timerra",
+    "description": "Countdown to your special events. Never miss a birthday, vacation, or holiday again.",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0F172A",
+    "theme_color": "#7C3AED",
+    "orientation": "portrait",
+    "categories": ["productivity", "utilities"],
+    "prefer_related_applications": false,
+    "lang": "en",
+    "dir": "ltr",
+    "scope": "/",
+    "display_override": ["standalone", "minimal-ui"],
+    "icons": [
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⏳%3C/text%3E%3C/svg%3E",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Add New Event",
+            "short_name": "New Event",
+            "description": "Quickly create a new countdown event",
+            "url": "/?action=new"
+        },
+        {
+            "name": "View All Events",
+            "short_name": "All Events",
+            "description": "See all your countdown events",
+            "url": "/?action=events"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1280' height='720'%3E%3Crect width='100%25' height='100%25' fill='%230F172A'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%237C3AED' font-size='40' font-family='sans-serif'%3E⏳ Timerra%3C/text%3E%3C/svg%3E",
+            "sizes": "1280x720",
+            "type": "image/svg+xml",
+            "form_factor": "wide",
+            "label": "Timerra Desktop View"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='640'%3E%3Crect width='100%25' height='100%25' fill='%230F172A'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%237C3AED' font-size='30' font-family='sans-serif'%3E⏳ Timerra%3C/text%3E%3C/svg%3E",
+            "sizes": "360x640",
+            "type": "image/svg+xml",
+            "form_factor": "narrow",
+            "label": "Timerra Mobile View"
+        }
+    ]
+}

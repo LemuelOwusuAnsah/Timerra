@@ -1,28 +1,35 @@
 (function() {
-    const DOM = {
+    var DOM = {
         eventName: document.getElementById('eventName'),
         eventDate: document.getElementById('eventDate'),
         addBtn: document.getElementById('addEventBtn'),
         eventsList: document.getElementById('eventsList'),
         eventsCount: document.getElementById('eventsCount'),
         activeCountdown: document.getElementById('activeCountdown'),
-        themeToggle: document.getElementById('themeToggle')
+        themeToggle: document.getElementById('themeToggle'),
+        exportBtn: document.getElementById('exportBtn'),
+        importBtn: document.getElementById('importBtn'),
+        importFile: document.getElementById('importFile'),
+        notifyBtn: document.getElementById('notifyBtn'),
+        clearAllBtn: document.getElementById('clearAllBtn')
     };
 
-    let events = [];
-    let activeEventId = null;
-    let countdownInterval = null;
-    const STORAGE_KEY = 'timerra_events';
+    var events = [];
+    var activeEventId = null;
+    var countdownInterval = null;
+    var notificationCheckInterval = null;
+    var STORAGE_KEY = 'timerra_events';
 
     function loadEvents() {
         try {
-            const saved = localStorage.getItem(STORAGE_KEY);
+            var saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 events = JSON.parse(saved);
                 renderEvents();
                 if (events.length > 0) {
                     selectEvent(events[0].id);
                 }
+                checkUpcomingNotifications();
             }
         } catch (e) {}
     }
@@ -38,24 +45,33 @@
     }
 
     function getTimeRemaining(targetDate) {
-        const now = new Date().getTime();
-        const target = new Date(targetDate).getTime();
-        const diff = target - now;
+        var now = new Date().getTime();
+        var target = new Date(targetDate).getTime();
+        var diff = target - now;
 
         if (diff <= 0) {
             return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
         }
 
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-        return { days, hours, minutes, seconds, expired: false };
+        return { days: days, hours: hours, minutes: minutes, seconds: seconds, expired: false };
+    }
+
+    function getProgress(targetDate) {
+        var now = new Date().getTime();
+        var target = new Date(targetDate).getTime();
+        var start = target - (30 * 24 * 60 * 60 * 1000);
+        var total = target - start;
+        var passed = now - start;
+        return Math.min(100, Math.max(0, (passed / total) * 100));
     }
 
     function formatDate(dateStr) {
-        const d = new Date(dateStr);
+        var d = new Date(dateStr);
         return d.toLocaleDateString('en-US', {
             weekday: 'short',
             month: 'short',
@@ -65,6 +81,12 @@
             minute: '2-digit',
             hour12: true
         });
+    }
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     function renderEvents() {
@@ -78,20 +100,28 @@
         DOM.eventsCount.textContent = events.length + ' event' + (events.length > 1 ? 's' : '');
 
         events.forEach(function(event) {
-            const item = document.createElement('div');
+            var item = document.createElement('div');
             item.className = 'event-item' + (event.id === activeEventId ? ' active-event' : '');
 
-            const info = document.createElement('div');
+            var info = document.createElement('div');
             info.className = 'event-info';
+
+            var progress = getProgress(event.date);
+            var remaining = getTimeRemaining(event.date);
+            var timeStr = remaining.expired ? '🎉 Passed' : remaining.days + 'd ' + remaining.hours + 'h ' + remaining.minutes + 'm';
+
             info.innerHTML = `
                 <span class="event-name">${escapeHtml(event.name)}</span>
-                <span class="event-meta">${formatDate(event.date)}</span>
+                <span class="event-meta">${formatDate(event.date)} · ${timeStr}</span>
+                <div class="event-progress-small">
+                    <div class="fill" style="width:${progress}%"></div>
+                </div>
             `;
 
-            const actions = document.createElement('div');
+            var actions = document.createElement('div');
             actions.className = 'event-actions';
 
-            const selectBtn = document.createElement('button');
+            var selectBtn = document.createElement('button');
             selectBtn.className = 'event-select';
             selectBtn.textContent = event.id === activeEventId ? 'Active' : 'Select';
             selectBtn.addEventListener('click', function(e) {
@@ -103,7 +133,7 @@
                 selectBtn.style.color = 'var(--primary)';
             }
 
-            const deleteBtn = document.createElement('button');
+            var deleteBtn = document.createElement('button');
             deleteBtn.className = 'event-delete';
             deleteBtn.innerHTML = '<i class="bi bi-trash3"></i>';
             deleteBtn.addEventListener('click', function(e) {
@@ -125,12 +155,6 @@
         });
     }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
     function selectEvent(id) {
         activeEventId = id;
         renderEvents();
@@ -150,8 +174,8 @@
     }
 
     function addEvent() {
-        const name = DOM.eventName.value.trim();
-        const date = DOM.eventDate.value;
+        var name = DOM.eventName.value.trim();
+        var date = DOM.eventDate.value;
 
         if (!name) {
             alert('Please enter an event name.');
@@ -163,16 +187,18 @@
             return;
         }
 
-        const target = new Date(date);
+        var target = new Date(date);
         if (target.getTime() < Date.now()) {
             alert('The date must be in the future.');
             return;
         }
 
-        const newEvent = {
+        var newEvent = {
             id: generateId(),
             name: name,
-            date: date
+            date: date,
+            createdAt: new Date().toISOString(),
+            notified: false
         };
 
         events.push(newEvent);
@@ -181,20 +207,22 @@
         selectEvent(newEvent.id);
 
         DOM.eventName.value = '';
-        DOM.eventDate.value = '';
-
-        // Set default date for next event
         setDefaultDate();
+
+        // Play sound
+        if (window.TimerraSounds) {
+            window.TimerraSounds.playNotification();
+        }
     }
 
     function setDefaultDate() {
-        const now = new Date();
+        var now = new Date();
         now.setDate(now.getDate() + 7);
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
+        var year = now.getFullYear();
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var day = String(now.getDate()).padStart(2, '0');
+        var hours = String(now.getHours()).padStart(2, '0');
+        var minutes = String(now.getMinutes()).padStart(2, '0');
         DOM.eventDate.value = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
     }
 
@@ -214,7 +242,7 @@
             return;
         }
 
-        const event = events.find(function(e) { return e.id === activeEventId; });
+        var event = events.find(function(e) { return e.id === activeEventId; });
         if (!event) {
             DOM.activeCountdown.innerHTML = `
                 <div class="countdown-placeholder">
@@ -233,7 +261,8 @@
     }
 
     function updateCountdownDisplay(event) {
-        const remaining = getTimeRemaining(event.date);
+        var remaining = getTimeRemaining(event.date);
+        var progress = getProgress(event.date);
 
         if (remaining.expired) {
             DOM.activeCountdown.innerHTML = `
@@ -241,8 +270,25 @@
                     <div class="countdown-name">${escapeHtml(event.name)}</div>
                     <div class="countdown-date">${formatDate(event.date)}</div>
                     <div class="countdown-expired">🎉 Event has passed!</div>
+                    <div class="countdown-progress">
+                        <div class="progress-fill" style="width:100%"></div>
+                    </div>
                 </div>
             `;
+            
+            // Play sound when countdown hits zero (only once)
+            if (event._notified === undefined || !event._notified) {
+                event._notified = true;
+                if (window.TimerraSounds) {
+                    window.TimerraSounds.playCountdownEnd();
+                }
+                if (window.TimerraNotifications) {
+                    window.TimerraNotifications.send(
+                        '⏳ ' + event.name,
+                        '🎉 Your countdown has reached zero!'
+                    );
+                }
+            }
             return;
         }
 
@@ -268,14 +314,48 @@
                         <span class="label">Seconds</span>
                     </div>
                 </div>
+                <div class="countdown-progress">
+                    <div class="progress-fill" style="width:${progress}%"></div>
+                </div>
             </div>
         `;
     }
 
+    function checkUpcomingNotifications() {
+        if (notificationCheckInterval) {
+            clearInterval(notificationCheckInterval);
+        }
+
+        notificationCheckInterval = setInterval(function() {
+            var now = Date.now();
+            var oneDay = 24 * 60 * 60 * 1000;
+
+            events.forEach(function(event) {
+                var target = new Date(event.date).getTime();
+                var diff = target - now;
+
+                if (diff > 0 && diff <= oneDay && !event.notified) {
+                    var days = Math.floor(diff / oneDay);
+                    var hours = Math.floor((diff % oneDay) / (60 * 60 * 1000));
+                    var msg = days > 0 ? days + 'd ' + hours + 'h remaining' : hours + ' hours remaining';
+                    
+                    if (window.TimerraNotifications) {
+                        window.TimerraNotifications.send('⏳ ' + event.name, msg);
+                    }
+                    if (window.TimerraSounds) {
+                        window.TimerraSounds.playNotification();
+                    }
+                    event.notified = true;
+                    saveEvents();
+                }
+            });
+        }, 60000);
+    }
+
     function toggleTheme() {
-        const html = document.documentElement;
-        const current = html.getAttribute('data-bs-theme');
-        const icon = DOM.themeToggle.querySelector('i');
+        var html = document.documentElement;
+        var current = html.getAttribute('data-bs-theme');
+        var icon = DOM.themeToggle.querySelector('i');
         if (current === 'dark') {
             html.setAttribute('data-bs-theme', 'light');
             icon.className = 'bi bi-sun-fill';
@@ -285,6 +365,35 @@
         }
     }
 
+    function getEvents() {
+        return events;
+    }
+
+    function addEvents(newEvents) {
+        events = events.concat(newEvents);
+        saveEvents();
+        renderEvents();
+        if (events.length > 0 && !activeEventId) {
+            selectEvent(events[0].id);
+        }
+    }
+
+    function clearAll() {
+        events = [];
+        activeEventId = null;
+        saveEvents();
+        renderEvents();
+        startCountdown();
+    }
+
+    // Expose for export/import
+    window.TimerraEvents = {
+        getEvents: getEvents,
+        addEvents: addEvents,
+        clearAll: clearAll
+    };
+
+    // Initialize
     function init() {
         setDefaultDate();
         loadEvents();
@@ -305,13 +414,57 @@
 
         DOM.themeToggle.addEventListener('click', toggleTheme);
 
-        // Also select event on Enter key in the event name field
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.target === DOM.eventName) {
-                e.preventDefault();
-                DOM.eventDate.focus();
-            }
-        });
+        // Export button
+        if (DOM.exportBtn) {
+            DOM.exportBtn.addEventListener('click', function() {
+                if (window.TimerraExport) {
+                    window.TimerraExport.exportEvents(events);
+                } else {
+                    alert('Export module not loaded. Please refresh the page.');
+                }
+            });
+        }
+
+        // Import button
+        if (DOM.importBtn) {
+            DOM.importBtn.addEventListener('click', function() {
+                if (window.TimerraExport) {
+                    window.TimerraExport.importFromFile();
+                } else {
+                    alert('Import module not loaded. Please refresh the page.');
+                }
+            });
+        }
+
+        // Notify button (request permission)
+        if (DOM.notifyBtn) {
+            DOM.notifyBtn.addEventListener('click', function() {
+                if (window.TimerraNotifications) {
+                    window.TimerraNotifications.requestPermission().then(function(result) {
+                        if (result === 'granted') {
+                            alert('Notifications enabled! You will be notified 24 hours before your events.');
+                        } else {
+                            alert('Notification permission denied. Please enable in your browser settings.');
+                        }
+                    }).catch(function() {
+                        alert('Notifications are not supported in this browser.');
+                    });
+                } else {
+                    alert('Notifications module not loaded. Please refresh the page.');
+                }
+            });
+        }
+
+        // Clear all button
+        if (DOM.clearAllBtn) {
+            DOM.clearAllBtn.addEventListener('click', function() {
+                if (window.TimerraExport) {
+                    window.TimerraExport.clearAllEvents();
+                } else {
+                    alert('Export module not loaded. Please refresh the page.');
+                }
+            });
+        }
     }
 
     document.addEventListener('DOMContentLoaded', init);
