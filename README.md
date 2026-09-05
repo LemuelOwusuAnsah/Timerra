@@ -25,7 +25,7 @@ A modern, clean countdown timer application built with vanilla JavaScript. Creat
 
 ## Live Demo
 
-[View Live Demo](https://lemuelowusuansah.github.io/timerra)
+[View Live Demo]([https://lemuelowusuansah.github.io/Timerra/])
 
 ## Installation
 
