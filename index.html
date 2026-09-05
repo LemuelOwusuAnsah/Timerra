@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#7C3AED">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>Timerra</title>
+    
+    <meta name="description" content="Timerra - Countdown to your special events. Track birthdays, vacations, holidays, and more.">
+    <meta name="keywords" content="timerra, countdown, event countdown, timer, countdown timer, days until">
+    <meta name="author" content="Lemuel Owusu-Ansah">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:title" content="Timerra - Countdown Timer">
+    <meta property="og:description" content="Countdown to your special events.">
+    <meta property="og:type" content="website">
+    
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Timerra - Countdown Timer">
+    <meta name="twitter:description" content="Countdown to your special events.">
+    
+    <link rel="canonical" href="https://your-domain.com/timerra">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏳</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏳</text></svg>">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <div class="bg-glow"></div>
+        <div class="bg-grid"></div>
+
+        <header class="app-header">
+            <div class="brand-badge">
+                <span class="brand-icon">⏳</span>
+                <span class="brand-name">TIMERRA</span>
+                <span class="brand-sparkle">✨</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline-secondary btn-sm rounded-circle theme-toggle" id="themeToggle">
+                    <i class="bi bi-moon-fill"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <div class="timer-card glass">
+                <div class="card-header-custom">
+                    <h1 class="app-title">Countdown Timer</h1>
+                    <p class="app-subtitle">Never miss a special moment</p>
+                </div>
+
+                <div class="timer-body">
+                    <!-- Create New Event -->
+                    <div class="create-event">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label class="input-label">📝 Event Name</label>
+                                <input type="text" id="eventName" class="form-control" placeholder="e.g. Birthday, Vacation" maxlength="30">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="input-label">📅 Date & Time</label>
+                                <input type="datetime-local" id="eventDate" class="form-control">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button id="addEventBtn" class="btn-add">
+                                    <i class="bi bi-plus-lg"></i> Add Event
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Countdown Display -->
+                    <div id="activeCountdown" class="countdown-display">
+                        <div class="countdown-placeholder">
+                            <span class="placeholder-icon">⏳</span>
+                            <p class="placeholder-text">Select an event to start the countdown</p>
+                        </div>
+                    </div>
+
+                    <!-- Saved Events -->
+                    <div class="events-section">
+                        <div class="events-header">
+                            <span class="events-title"><i class="bi bi-clock-history"></i> Your Events</span>
+                            <span id="eventsCount" class="events-count">0 events</span>
+                        </div>
+                        <div id="eventsList" class="events-list">
+                            <div class="empty-events">No events yet. Create your first countdown!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <span>Timerra · Apps by Lemuel Owusu-Ansah</span>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/timer.js"></script>
+</body>
+</html>
